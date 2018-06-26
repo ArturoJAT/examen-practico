@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Page Title</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body <div>Agregar Nombre:
+	<input type="text" id="nombre"> Precio:
+	<input type="text" id="precio">
+	<button id="agregar">Agregar</button>
+	</div>
+	<table>
+		<tr>
+			<th>Nombre del Producto</th>
+			<th>Precio</th>
+		</tr>
+	</table>
+	<script>
+		var nombreAnterior = ""
+		$.ajax({
+			type: 'GET',
+			contentType: 'application/json',
+			url: 'http://35.231.157.159:8080/productos',
+			success: function (data) {
+				var tabla = $('table');
+
+				for (elemento in data) {
+					tabla.append("<tr id=" + elemento + " name=" + data[elemento].nombre + "><td>" + data[elemento].nombre +
+						"</td><td>" + data[elemento].precio + '</td><td> <button onclick="eliminaElemento(this)" name=' + elemento +
+						'>Eliminar</button></td><td><button onclick="editarElemento(this)" name=' + elemento +
+						'>Editar</button></td></tr>');
+				}
+			}
+		});
+
+		function editarElemento(sender) {
+
+			var indice = '#' + sender.name;
+			var producto = $(indice);
+			if (sender.innerHTML === 'Editar') {
+				producto.prop('contenteditable', true);
+				sender.innerHTML = 'Save';
+				nombreAnterior = producto.children('td').eq(0).html();
+			} else {
+				producto.prop('contenteditable', false);
+				sender.innerHTML = 'Editar';
+				var datos = {}
+				datos.nombreAnterior = nombreAnterior;
+				datos.nombre = producto.children('td').eq(0).html();
+				datos.precio = producto.children('td').eq(1).html();
+				console.log(datos);
+
+				$.ajax({
+					type: 'PUT',
+					data: JSON.stringify(datos),
+					contentType: 'application/json',
+					url: 'http://35.231.157.159:8080/editar',
+					success: function (data) {
+						location.reload();
+					}
+				});
+			}
+		}
+
+		function eliminaElemento(sender) {
+			var indice = '#' + sender.name;
+			var producto = $(indice);
+
+			var datos = {}
+			datos.nombre = producto.attr("name");
+
+			$.ajax({
+				type: 'DELETE',
+				data: JSON.stringify(datos),
+				contentType: 'application/json',
+				url: 'http://35.231.157.159:8080/eliminar',
+				success: function (data) {
+					location.reload();
+				}
+			});
+		}
+
+
+
+		$("#agregar").click(function () {
+			var nombre = $("#nombre").val();
+			var precio = $("#precio").val();
+			datos = {};
+			datos.nombre = nombre;
+			datos.precio = precio;
+
+			$.ajax({
+				type: 'POST',
+				data: JSON.stringify(datos),
+				contentType: 'application/json',
+				url: 'http://35.231.157.159:8080/agregar',
+				success: function (data) {
+					location.reload();
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>
